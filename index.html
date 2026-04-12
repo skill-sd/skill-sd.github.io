@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0K4X2NNFNB"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-0K4X2NNFNB');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      name="description"
+      content="Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents — teacher-only dynamic skills with gradient-correct reverse-KL distillation across ALFWorld, AppWorld, and Sokoban."
+    >
+    <meta name="theme-color" content="#F5F0E0">
+    <meta property="og:title" content="Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents">
+    <meta property="og:description" content="Dynamic skills condition only the teacher while the student acts under the plain task prompt. Evaluated on ALFWorld, AppWorld, and Sokoban.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://skill-sd.github.io/">
+    <meta property="og:image" content="https://skill-sd.github.io/assets/skill-sd-overview.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents">
+    <meta name="twitter:description" content="Dynamic skills condition only the teacher while the student acts under the plain task prompt. Evaluated on ALFWorld, AppWorld, and Sokoban.">
+    <meta name="twitter:image" content="https://skill-sd.github.io/assets/skill-sd-overview.png">
+    <title>Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;800&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" sizes="any">
+    <link rel="shortcut icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-shell">
+        <a class="logo-box" href="#abstract" aria-label="Skill-SD home">SKILL&middot;SD</a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="#abstract">Abstract</a>
+          <span class="nav-sep" aria-hidden="true">&middot;</span>
+          <a href="#method">Method</a>
+          <span class="nav-sep" aria-hidden="true">&middot;</span>
+          <a href="#alfworld">ALFWorld</a>
+          <span class="nav-sep" aria-hidden="true">&middot;</span>
+          <a href="#benchmarks">AppWorld &amp; Sokoban</a>
+          <span class="nav-sep" aria-hidden="true">&middot;</span>
+          <a href="#bibtex">BibTeX</a>
+        </nav>
+        <a class="btn btn-primary btn-nav" href="https://openreview.net/pdf?id=ZeThM3k7x0" target="_blank" rel="noopener noreferrer">Read Paper <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </header>
+
+    <main>
+      <section class="section section-cream hero-section" id="abstract">
+        <div class="container">
+          <div class="hero-copy">
+            <p class="eyebrow">Skill-SD</p>
+            <h1>Skill-Conditioned Self-Distillation for Multi-turn LLM Agents</h1>
+            <p class="hero-authors">
+              Hao Wang<sup>*&#8224;1,5</sup>, Guozhi Wang<sup>*&#8225;5</sup>, Han Xiao<sup>*2</sup>, Yufeng Zhou<sup>5</sup>,
+              Yue Pan<sup>5</sup>, Jichao Wang<sup>1</sup>, Ke Xu<sup>3</sup>, Yafei Wen<sup>5</sup>,
+              Xiaohu Ruan<sup>5</sup>, Xiaoxin Chen<sup>5</sup>, Honggang Qi<sup>&sect;4</sup>
+            </p>
+            <div class="hero-affiliations">
+              <span><sup>1</sup> Hangzhou Institute for Advanced Study, UCAS</span>
+              <span><sup>2</sup> The Chinese University of Hong Kong</span>
+              <span><sup>3</sup> University of Science and Technology of China</span>
+              <span><sup>4</sup> University of Chinese Academy of Sciences</span>
+              <span><sup>5</sup> vivo AI Lab</span>
+              <span class="affil-notes"><sup>*</sup>Equal contribution &nbsp; <sup>&sect;</sup>Corresponding author &nbsp; <sup>&#8225;</sup>Project lead &nbsp; <sup>&#8224;</sup>Intern at vivo</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="container hero-below">
+          <div class="logo-row" aria-label="Institution logos">
+            <a href="https://english.ucas.ac.cn/" target="_blank" rel="noopener noreferrer">
+              <img src="assets/logos/ucas.svg" alt="University of Chinese Academy of Sciences" height="40">
+            </a>
+            <a href="https://www.cuhk.edu.hk/english/" target="_blank" rel="noopener noreferrer">
+              <img src="assets/logos/cuhk.svg" alt="The Chinese University of Hong Kong" height="40">
+            </a>
+            <a href="https://en.ustc.edu.cn/" target="_blank" rel="noopener noreferrer">
+              <img src="assets/logos/ustc.png" alt="University of Science and Technology of China" height="40">
+            </a>
+            <a href="https://www.vivo.com/en/" target="_blank" rel="noopener noreferrer">
+              <img src="assets/logos/vivo.svg" alt="vivo AI Lab" height="40">
+            </a>
+          </div>
+          <div class="button-row">
+            <a class="btn btn-outline" href="https://openreview.net/pdf?id=ZeThM3k7x0" target="_blank" rel="noopener noreferrer">&#128196; Paper</a>
+            <a class="btn btn-primary" href="https://github.com/K1XE/Skill-SD" target="_blank" rel="noopener noreferrer">&#128187; Code</a>
+          </div>
+        </div>
+
+        <div class="container abstract-row">
+          <div class="abstract-card abstract-card-wide">
+            <p class="card-label">Abstract</p>
+            <p>
+              Reinforcement learning (RL) has been widely used to train LLM agents for multi-turn interactive
+              tasks, but its sample efficiency is severely limited by sparse rewards and long horizons.
+              On-policy self-distillation (OPSD) alleviates this by providing dense token-level supervision
+              from a privileged teacher that has access to ground-truth answers. However, such fixed
+              privileged information cannot capture the diverse valid strategies in agent tasks, and naively
+              combining OPSD with RL often leads to training collapse. To address these limitations, we
+              introduce Skill-SD, a framework that turns the agent&#39;s own trajectories into dynamic
+              training-only supervision. Completed trajectories are summarized into compact natural language
+              <em>skills</em> that describe successful behaviors, mistakes, and workflows. These skills serve
+              as dynamic privileged information conditioning only the teacher, while the student always acts
+              under the plain task prompt and learns to internalize the guidance through distillation. To
+              stabilize the training, we derive an importance-weighted reverse-KL loss to provide
+              gradient-correct token-level distillation, and dynamically synchronize the teacher with the
+              improving student. Experimental results on agentic benchmarks demonstrate that Skill-SD
+              substantially outperforms the standard RL baseline, improving over vanilla GRPO by 14.0/10.9
+              points on AppWorld/Sokoban and over vanilla OPD by 42.1/40.6 points, with consistent paired-seed
+              gains using self-written skills on ALFWorld.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-yellow quote-banner">
+        <div class="container quote-shell">
+          <p class="quote-text">The helmsman sets the bearing.<br>The officer reads the wind.</p>
+          <p class="quote-subtext">Task reward from GRPO determines the overall direction; the skill-conditioned teacher supplies fine-grained, token-level guidance for the decisions in between.</p>
+        </div>
+      </section>
+
+      <section class="section section-cream">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Contributions</p>
+            <h2>Key Contributions</h2>
+          </div>
+          <div class="cards-grid cards-grid-3">
+            <article class="card">
+              <p class="card-icon" aria-hidden="true">&#128221;</p>
+              <h3>Dynamic Skill Summaries</h3>
+              <p>
+                Each completed trajectory is asynchronously summarized into a structured skill: success
+                patterns, mistake analysis, and a golden workflow.
+              </p>
+            </article>
+            <article class="card">
+              <p class="card-icon" aria-hidden="true">&#128105;&#8205;&#127979;</p>
+              <h3>Teacher-Only Guidance</h3>
+              <p>
+                Skills augment the teacher&#39;s prompt only. The student always operates under a clean task
+                prompt, eliminating train-test mismatch.
+              </p>
+            </article>
+            <article class="card">
+              <p class="card-icon" aria-hidden="true">&#9878;</p>
+              <h3>Gradient-Correct Distillation</h3>
+              <p>
+                An importance-weighted reverse-KL loss corrects per-token gradient bias caused by teacher and
+                student distribution mismatch.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-white" id="method">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Method</p>
+            <h2>How it works</h2>
+          </div>
+          <div class="steps-grid">
+            <article class="step-card">
+              <div class="step-chip">01</div>
+              <h3>Plain-Prompt On-Policy Rollouts</h3>
+              <p>The student generates rollouts using only the task prompt &mdash; no distilled skills &mdash; preserving identical train/test conditioning.</p>
+            </article>
+            <article class="step-card">
+              <div class="step-chip">02</div>
+              <h3>Trajectory-to-Skill Distillation</h3>
+              <p>An auxiliary LLM (or frozen copy of the student) compresses each episode into a reusable skill summary of successes, failures, and workflow.</p>
+            </article>
+            <article class="step-card">
+              <div class="step-chip">03</div>
+              <h3>Teacher-Only Skill Replay</h3>
+              <p>Retrieved skills go only to the teacher, which re-scores the trajectory token by token &mdash; student inputs stay unchanged.</p>
+            </article>
+            <article class="step-card">
+              <div class="step-chip">04</div>
+              <h3>Joint RL + Distillation</h3>
+              <p>GRPO handles trajectory-level reward; importance-weighted reverse-KL distills token-level guidance and corrects teacher-student mismatch.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-cream">
+        <div class="container method-figure-shell">
+          <div class="section-heading section-heading-center">
+            <p class="eyebrow">Pipeline</p>
+            <h2>Method Overview</h2>
+          </div>
+          <figure class="framed-figure method-figure">
+            <img
+              src="assets/skill-sd-overview.png"
+              alt="Skill-SD method overview showing student rollouts, skill extraction, and distillation"
+              width="2000"
+              height="1125"
+              loading="lazy"
+            >
+            <figcaption>
+              Skill-SD pipeline: student rollouts &rarr; skill extraction &rarr; importance-weighted
+              distillation.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section section-white" id="skills">
+        <div class="container">
+          <div class="section-heading skill-section-heading">
+            <p class="eyebrow">Skill Representation</p>
+            <h2>What a Skill Looks Like</h2>
+          </div>
+
+          <div class="skill-section-intro">
+            <p>
+              Skill-SD does not archive full trajectories as supervision. Each completed attempt is compressed into a
+              compact teacher-only JSON artifact that records what to reuse, what to avoid, and what the next best rollout
+              should do.
+            </p>
+            <div class="skill-section-note" aria-label="Teacher-only prompt artifact">
+              <span class="skill-section-note-label">Teacher-Only Prompt</span>
+              <span class="skill-section-note-text">
+                Distilled after a completed attempt, injected only during distillation.
+              </span>
+            </div>
+          </div>
+
+          <div class="skill-showcase" data-active-field="success">
+            <div class="skill-field-list" role="group" aria-label="Skill fields">
+              <button
+                class="skill-field-card skill-field-card-success is-active"
+                type="button"
+                data-skill-field="success"
+                data-skill-title="success_analysis"
+                aria-pressed="true"
+                aria-controls="skill-json-view"
+              >
+                <span class="skill-field-symbol" aria-hidden="true">&#10003;</span>
+                <span class="skill-field-kicker">Reuse the right instinct</span>
+                <h3><code>success_analysis</code></h3>
+                <p>What strategic intent was correct and should be reused on future attempts.</p>
+              </button>
+
+              <button
+                class="skill-field-card skill-field-card-mistake"
+                type="button"
+                data-skill-field="mistake"
+                data-skill-title="mistake_analysis"
+                aria-pressed="false"
+                aria-controls="skill-json-view"
+              >
+                <span class="skill-field-symbol" aria-hidden="true">&#10007;</span>
+                <span class="skill-field-kicker">Audit the failure</span>
+                <h3><code>mistake_analysis</code></h3>
+                <p>What failed, why it failed, and which assumptions or API mistakes caused the error.</p>
+              </button>
+
+              <button
+                class="skill-field-card skill-field-card-golden"
+                type="button"
+                data-skill-field="golden"
+                data-skill-title="golden_workflow"
+                aria-pressed="false"
+                aria-controls="skill-json-view"
+              >
+                <span class="skill-field-symbol" aria-hidden="true">&#10022;</span>
+                <span class="skill-field-kicker">Stage the ideal rollout</span>
+                <h3><code>golden_workflow</code></h3>
+                <p>A concise ideal process the teacher can use to guide the student at the token level.</p>
+              </button>
+            </div>
+
+            <div class="skill-json-view" id="skill-json-view" aria-live="polite">
+              <div class="skill-json-header">
+                <div class="skill-json-dots" aria-hidden="true">
+                  <span></span><span></span><span></span>
+                </div>
+                <p class="skill-json-filename">skill.json</p>
+                <div class="skill-json-badges" aria-hidden="true">
+                  <span class="skill-json-badge skill-json-badge-success is-active" data-skill-badge="success">success_analysis</span>
+                  <span class="skill-json-badge skill-json-badge-mistake" data-skill-badge="mistake">mistake_analysis</span>
+                  <span class="skill-json-badge skill-json-badge-golden" data-skill-badge="golden">golden_workflow</span>
+                </div>
+              </div>
+
+              <ol class="skill-json-lines" aria-label="Serialized skill example">
+                <li class="skill-json-line"><span class="skill-json-punc">{</span></li>
+                <li class="skill-json-line skill-json-field skill-json-field-success is-active" data-skill-panel="success">
+                  <span class="skill-json-punc">"</span><span class="skill-json-key skill-json-key-success">success_analysis</span><span class="skill-json-punc">"</span><span class="skill-json-punc">: </span><span class="skill-json-string">"Using task-specific apps and authenticating restricted APIs first is the right strategy."</span><span class="skill-json-punc">,</span>
+                </li>
+                <li class="skill-json-line skill-json-field skill-json-field-mistake" data-skill-panel="mistake">
+                  <span class="skill-json-punc">"</span><span class="skill-json-key skill-json-key-mistake">mistake_analysis</span><span class="skill-json-punc">"</span><span class="skill-json-punc">: </span><span class="skill-json-string">"The main failure came from acting on unverified assumptions and calling restricted APIs before checking authentication and parameter requirements."</span><span class="skill-json-punc">,</span>
+                </li>
+                <li class="skill-json-line skill-json-field skill-json-field-golden" data-skill-panel="golden">
+                  <span class="skill-json-punc">"</span><span class="skill-json-key skill-json-key-golden">golden_workflow</span><span class="skill-json-punc">"</span><span class="skill-json-punc">: </span><span class="skill-json-string">"1. Retrieve the actual bill from the file system. 2. Get roommate contact info via the contact app. 3. Authenticate Venmo, compute each share, and send the payment requests with the correct API calls."</span>
+                </li>
+                <li class="skill-json-line"><span class="skill-json-punc">}</span></li>
+              </ol>
+
+              <div class="skill-json-footer">
+                <p class="skill-json-caption">
+                  Active field: <strong class="skill-json-current" data-skill-current>success_analysis</strong>
+                  &middot; click a card to spotlight how the distilled attempt is serialized for the teacher.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- PRIMARY EXPERIMENTAL SUITE: ALFWorld (NeurIPS 2026 Open-Weight)    -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <section class="section section-cream" id="alfworld">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Open-Weight Evaluation Suite</p>
+            <h2>ALFWorld Experiments</h2>
+          </div>
+
+          <p class="section-lead">
+            To test writer capacity, explicit skill prompting, alternative privileged contexts, distillation weight sensitivity,
+            and end-to-end training cost under a fully open-weight protocol, we evaluate Skill-SD on <strong>ALFWorld</strong> across
+            two backbones (<code>Qwen3-4B-Instruct-2507</code> and <code>Qwen2.5-3B-Instruct</code>) and paired random seeds.
+            A <strong>frozen copy of each student</strong> writes the skills &mdash; no external frontier model is required.
+          </p>
+
+          <div class="meta-pills" aria-label="ALFWorld experimental protocol">
+            <span class="meta-pill">3,553 Train Games</span>
+            <span class="meta-pill">128 Held-Out Eval Episodes</span>
+            <span class="meta-pill">6 Household Task Families</span>
+            <span class="meta-pill">Frozen Self-Writer</span>
+            <span class="meta-pill">&lambda; = 10<sup>&minus;3</sup></span>
+            <span class="meta-pill">Step 150</span>
+          </div>
+
+          <div class="kpi-grid">
+            <article class="kpi-card kpi-card-accent">
+              <p class="kpi-kicker">Qwen3-4B &middot; Paired Seeds</p>
+              <p class="kpi-metric">+14.1 / +14.0 pts</p>
+              <p class="kpi-desc">Over Vanilla GRPO on seeds 43 &amp; 44 (75.8% vs. 61.7% and 69.5% vs. 55.5%) with self-written skills.</p>
+            </article>
+            <article class="kpi-card">
+              <p class="kpi-kicker">Qwen2.5-3B &middot; Paired Seeds</p>
+              <p class="kpi-metric">+8.6 / +13.3 pts</p>
+              <p class="kpi-desc">Self-written skills reach 85.2% &amp; 82.8% vs. 76.6% &amp; 69.5% for GRPO across paired seeds.</p>
+            </article>
+            <article class="kpi-card kpi-card-accent">
+              <p class="kpi-kicker">Skill Placement</p>
+              <p class="kpi-metric">75.8% vs. 53.9%</p>
+              <p class="kpi-desc">Teacher-only SDL beats Skill-Augmented GRPO (53.9%) and Matched Skill Prompting (14.8%).</p>
+            </article>
+            <article class="kpi-card">
+              <p class="kpi-kicker">Measured Overhead</p>
+              <p class="kpi-metric">+4.9% Wall-Clock</p>
+              <p class="kpi-desc">Teacher re-scoring takes 23.3 s (7.5%/step); +5.3% per step and +13.7% amortized GPU-hours on 8&times; H200.</p>
+            </article>
+          </div>
+
+          <!-- Subsection 1: Self-written skills & writer capacity -->
+          <div class="sub-block" style="margin-top:8px;">
+            <div class="sub-heading">
+              <h3>1. Self-Written Skills Across Backbones &amp; Writer Capacity</h3>
+              <p>
+                Every row shares the same seed, initial policy, and 128 held-out <code>valid_seen</code> games.
+                Self-written skills improve over Vanilla GRPO in all four paired runs; swapping the 3B self-writer for
+                <code>DeepSeek-V4-Flash</code> yields mixed results across seeds (+3.9 pts on seed 43, &minus;7.0 pts on seed 44).
+              </p>
+            </div>
+
+            <div class="table-wrap">
+              <table class="table-compact" aria-label="ALFWorld paired-seed success rates across backbones and skill writers">
+                <thead>
+                  <tr>
+                    <th scope="col">Student Backbone</th>
+                    <th scope="col">Seed</th>
+                    <th scope="col">Vanilla GRPO</th>
+                    <th scope="col">Skill-SD (Self-Writer)</th>
+                    <th scope="col">Gain vs. GRPO</th>
+                    <th scope="col">Skill-SD (DeepSeek-V4-Flash)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="highlight-row">
+                    <td><strong>Qwen3-4B-Instruct-2507</strong></td>
+                    <td class="num">43</td>
+                    <td class="num">61.7%</td>
+                    <td class="num"><strong>75.8%</strong></td>
+                    <td class="num"><span class="gain-pos">+14.1 pts</span></td>
+                    <td class="num">&mdash;</td>
+                  </tr>
+                  <tr class="highlight-row">
+                    <td><strong>Qwen3-4B-Instruct-2507</strong></td>
+                    <td class="num">44</td>
+                    <td class="num">55.5%</td>
+                    <td class="num"><strong>69.5%</strong></td>
+                    <td class="num"><span class="gain-pos">+14.0 pts</span></td>
+                    <td class="num">&mdash;</td>
+                  </tr>
+                  <tr>
+                    <td>Qwen2.5-3B-Instruct</td>
+                    <td class="num">43</td>
+                    <td class="num">76.6%</td>
+                    <td class="num">85.2%</td>
+                    <td class="num"><span class="gain-pos">+8.6 pts</span></td>
+                    <td class="num"><strong>89.1%</strong> <span class="gain-pos">(+12.5)</span></td>
+                  </tr>
+                  <tr>
+                    <td>Qwen2.5-3B-Instruct</td>
+                    <td class="num">44</td>
+                    <td class="num">69.5%</td>
+                    <td class="num"><strong>82.8%</strong></td>
+                    <td class="num"><span class="gain-pos">+13.3 pts</span></td>
+                    <td class="num">75.8% <span class="gain-pos">(+6.3)</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <figure class="framed-figure">
+              <svg class="chart-svg" viewBox="0 0 1096 388" width="1096" height="388" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ALFWorld validation success rate curves for Qwen3-4B and Qwen2.5-3B paired seeds" style="font-family:'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;background:#FFFFFF;">
+  <text x="58" y="40" font-size="14.5" font-weight="800" fill="#1A1A1A">Qwen3-4B-Instruct-2507</text>
+  <text x="58" y="56" font-size="11.2" font-weight="500" fill="#5D584E">Self-writer (frozen Qwen3-4B) vs. Vanilla GRPO</text>
+  <rect x="58" y="64" width="368" height="244" fill="#FCFBF7" rx="4"/>
+  <line x1="58" y1="308.0" x2="426" y2="308.0" stroke="#1A1A1A" stroke-width="1.2"/>
+  <text x="50" y="312.0" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">0%</text>
+  <line x1="58" y1="259.2" x2="426" y2="259.2" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="50" y="263.2" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">20%</text>
+  <line x1="58" y1="210.4" x2="426" y2="210.4" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="50" y="214.4" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">40%</text>
+  <line x1="58" y1="161.6" x2="426" y2="161.6" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="50" y="165.6" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">60%</text>
+  <line x1="58" y1="112.8" x2="426" y2="112.8" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="50" y="116.8" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">80%</text>
+  <line x1="58" y1="64.0" x2="426" y2="64.0" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="50" y="68.0" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">100%</text>
+  <line x1="58" y1="64" x2="58" y2="308" stroke="#1A1A1A" stroke-width="1.2"/>
+  <text x="16" y="186.0" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1A1A1A" transform="rotate(-90 16 186.0)">Val. Success Rate (%)</text>
+  <line x1="58.0" y1="308" x2="58.0" y2="313" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="58.0" y="326" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">0</text>
+  <line x1="131.6" y1="308" x2="131.6" y2="313" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="131.6" y="326" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">30</text>
+  <line x1="205.2" y1="308" x2="205.2" y2="313" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="205.2" y="326" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">60</text>
+  <line x1="278.8" y1="308" x2="278.8" y2="313" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="278.8" y="326" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">90</text>
+  <line x1="352.4" y1="308" x2="352.4" y2="313" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="352.4" y="326" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">120</text>
+  <line x1="426.0" y1="308" x2="426.0" y2="313" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="426.0" y="326" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">150</text>
+  <text x="242.0" y="343" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1A1A1A">Training Step</text>
+  <path d="M 58.0 260.4 L 82.5 228.0 L 107.1 243.1 L 131.6 235.5 L 156.1 241.4 L 180.7 250.9 L 205.2 237.5 L 229.7 249.0 L 254.3 233.6 L 278.8 233.6 L 303.3 216.5 L 327.9 214.5 L 352.4 205.0 L 376.9 218.5 L 401.5 186.0 L 426.0 172.6" fill="none" stroke="#D95F02" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+  <rect x="55.1" y="257.5" width="5.8" height="5.8" rx="0.8" fill="#FFFFFF" stroke="#D95F02" stroke-width="1.8"/>
+  <rect x="128.7" y="232.6" width="5.8" height="5.8" rx="0.8" fill="#FFFFFF" stroke="#D95F02" stroke-width="1.8"/>
+  <rect x="202.3" y="234.6" width="5.8" height="5.8" rx="0.8" fill="#FFFFFF" stroke="#D95F02" stroke-width="1.8"/>
+  <rect x="275.9" y="230.7" width="5.8" height="5.8" rx="0.8" fill="#FFFFFF" stroke="#D95F02" stroke-width="1.8"/>
+  <rect x="349.5" y="202.1" width="5.8" height="5.8" rx="0.8" fill="#FFFFFF" stroke="#D95F02" stroke-width="1.8"/>
+  <rect x="423.1" y="169.7" width="5.8" height="5.8" rx="0.8" fill="#FFFFFF" stroke="#D95F02" stroke-width="1.8"/>
+  <path d="M 58.0 258.5 L 82.5 214.5 L 107.1 228.0 L 131.6 228.0 L 156.1 231.9 L 180.7 237.5 L 205.2 247.0 L 229.7 237.5 L 254.3 228.0 L 278.8 222.1 L 303.3 231.9 L 327.9 210.9 L 352.4 205.0 L 376.9 208.9 L 401.5 197.5 L 426.0 157.5" fill="none" stroke="#D95F02" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="55.1" y="255.6" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="128.7" y="225.1" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="202.3" y="244.1" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="275.9" y="219.2" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="349.5" y="202.1" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="423.1" y="154.6" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <path d="M 58.0 260.4 L 82.5 239.4 L 107.1 235.5 L 131.6 222.1 L 156.1 231.9 L 180.7 229.9 L 205.2 214.5 L 229.7 207.0 L 254.3 212.6 L 278.8 195.5 L 303.3 172.6 L 327.9 161.1 L 352.4 184.0 L 376.9 186.0 L 401.5 180.4 L 426.0 138.4" fill="none" stroke="#1B9E77" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+  <circle cx="58.0" cy="260.4" r="3.3" fill="#FFFFFF" stroke="#1B9E77" stroke-width="1.8"/>
+  <circle cx="131.6" cy="222.1" r="3.3" fill="#FFFFFF" stroke="#1B9E77" stroke-width="1.8"/>
+  <circle cx="205.2" cy="214.5" r="3.3" fill="#FFFFFF" stroke="#1B9E77" stroke-width="1.8"/>
+  <circle cx="278.8" cy="195.5" r="3.3" fill="#FFFFFF" stroke="#1B9E77" stroke-width="1.8"/>
+  <circle cx="352.4" cy="184.0" r="3.3" fill="#FFFFFF" stroke="#1B9E77" stroke-width="1.8"/>
+  <circle cx="426.0" cy="138.4" r="3.3" fill="#FFFFFF" stroke="#1B9E77" stroke-width="1.8"/>
+  <path d="M 58.0 258.5 L 82.5 229.9 L 107.1 226.0 L 131.6 235.5 L 156.1 247.0 L 180.7 241.4 L 205.2 233.6 L 229.7 233.6 L 254.3 212.6 L 278.8 208.9 L 303.3 189.9 L 327.9 170.9 L 352.4 178.4 L 376.9 172.6 L 401.5 140.1 L 426.0 123.0" fill="none" stroke="#1B9E77" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="58.0" cy="258.5" r="3.7" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="131.6" cy="235.5" r="3.7" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="205.2" cy="233.6" r="3.7" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="278.8" cy="208.9" r="3.7" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="352.4" cy="178.4" r="3.7" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="426.0" cy="123.0" r="3.7" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <text x="434" y="126.8" font-size="11.2" font-weight="800" fill="#1B9E77">75.8%  Skill-SD s43</text>
+  <text x="434" y="142.2" font-size="11.2" font-weight="800" fill="#1B9E77">69.5%  Skill-SD s44</text>
+  <text x="434" y="161.3" font-size="11.2" font-weight="600" fill="#D95F02">61.7%  GRPO s43</text>
+  <text x="434" y="176.4" font-size="11.2" font-weight="600" fill="#D95F02">55.5%  GRPO s44</text>
+  <text x="588" y="40" font-size="14.5" font-weight="800" fill="#1A1A1A">Qwen2.5-3B-Instruct</text>
+  <text x="588" y="56" font-size="11.2" font-weight="500" fill="#5D584E">Self-writer vs. DeepSeek-V4-Flash writer & GRPO</text>
+  <rect x="588" y="64" width="340" height="244" fill="#FCFBF7" rx="4"/>
+  <line x1="588" y1="308.0" x2="928" y2="308.0" stroke="#1A1A1A" stroke-width="1.2"/>
+  <text x="580" y="312.0" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">0%</text>
+  <line x1="588" y1="259.2" x2="928" y2="259.2" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="580" y="263.2" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">20%</text>
+  <line x1="588" y1="210.4" x2="928" y2="210.4" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="580" y="214.4" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">40%</text>
+  <line x1="588" y1="161.6" x2="928" y2="161.6" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="580" y="165.6" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">60%</text>
+  <line x1="588" y1="112.8" x2="928" y2="112.8" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="580" y="116.8" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">80%</text>
+  <line x1="588" y1="64.0" x2="928" y2="64.0" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="580" y="68.0" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">100%</text>
+  <line x1="588" y1="64" x2="588" y2="308" stroke="#1A1A1A" stroke-width="1.2"/>
+  <line x1="588.0" y1="308" x2="588.0" y2="313" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="588.0" y="326" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">0</text>
+  <line x1="656.0" y1="308" x2="656.0" y2="313" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="656.0" y="326" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">30</text>
+  <line x1="724.0" y1="308" x2="724.0" y2="313" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="724.0" y="326" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">60</text>
+  <line x1="792.0" y1="308" x2="792.0" y2="313" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="792.0" y="326" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">90</text>
+  <line x1="860.0" y1="308" x2="860.0" y2="313" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="860.0" y="326" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">120</text>
+  <line x1="928.0" y1="308" x2="928.0" y2="313" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="928.0" y="326" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">150</text>
+  <text x="758.0" y="343" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1A1A1A">Training Step</text>
+  <path d="M 588.0 252.6 L 610.7 254.6 L 633.3 235.5 L 656.0 197.5 L 678.7 208.9 L 701.3 197.5 L 724.0 182.1 L 746.7 161.1 L 769.3 163.1 L 792.0 146.0 L 814.7 140.1 L 837.3 140.1 L 860.0 127.0 L 882.7 136.5 L 905.3 136.5 L 928.0 138.4" fill="none" stroke="#D95F02" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+  <rect x="585.1" y="249.7" width="5.8" height="5.8" rx="0.8" fill="#FFFFFF" stroke="#D95F02" stroke-width="1.8"/>
+  <rect x="653.1" y="194.6" width="5.8" height="5.8" rx="0.8" fill="#FFFFFF" stroke="#D95F02" stroke-width="1.8"/>
+  <rect x="721.1" y="179.2" width="5.8" height="5.8" rx="0.8" fill="#FFFFFF" stroke="#D95F02" stroke-width="1.8"/>
+  <rect x="789.1" y="143.1" width="5.8" height="5.8" rx="0.8" fill="#FFFFFF" stroke="#D95F02" stroke-width="1.8"/>
+  <rect x="857.1" y="124.1" width="5.8" height="5.8" rx="0.8" fill="#FFFFFF" stroke="#D95F02" stroke-width="1.8"/>
+  <rect x="925.1" y="135.5" width="5.8" height="5.8" rx="0.8" fill="#FFFFFF" stroke="#D95F02" stroke-width="1.8"/>
+  <path d="M 588.0 266.0 L 610.7 229.9 L 633.3 226.0 L 656.0 203.1 L 678.7 216.5 L 701.3 201.1 L 724.0 186.0 L 746.7 168.9 L 769.3 165.0 L 792.0 149.9 L 814.7 144.0 L 837.3 117.4 L 860.0 115.5 L 882.7 121.1 L 905.3 134.5 L 928.0 121.1" fill="none" stroke="#D95F02" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="585.1" y="263.1" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="653.1" y="200.2" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="721.1" y="183.1" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="789.1" y="147.0" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="857.1" y="112.6" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="925.1" y="118.2" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <path d="M 588.0 252.6 L 610.7 237.5 L 633.3 218.5 L 656.0 188.0 L 678.7 174.5 L 701.3 176.5 L 724.0 165.0 L 746.7 149.9 L 769.3 155.5 L 792.0 159.4 L 814.7 138.4 L 837.3 132.6 L 860.0 128.9 L 882.7 125.0 L 905.3 119.4 L 928.0 123.0" fill="none" stroke="#2F6FD6" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+  <polygon points="588.0,248.2 592.5,252.6 588.0,257.1 583.5,252.6" fill="#FFFFFF" stroke="#2F6FD6" stroke-width="1.8"/>
+  <polygon points="656.0,183.5 660.5,188.0 656.0,192.4 651.5,188.0" fill="#FFFFFF" stroke="#2F6FD6" stroke-width="1.8"/>
+  <polygon points="724.0,160.6 728.5,165.0 724.0,169.5 719.5,165.0" fill="#FFFFFF" stroke="#2F6FD6" stroke-width="1.8"/>
+  <polygon points="792.0,154.9 796.5,159.4 792.0,163.9 787.5,159.4" fill="#FFFFFF" stroke="#2F6FD6" stroke-width="1.8"/>
+  <polygon points="860.0,124.4 864.5,128.9 860.0,133.4 855.5,128.9" fill="#FFFFFF" stroke="#2F6FD6" stroke-width="1.8"/>
+  <polygon points="928.0,118.6 932.5,123.0 928.0,127.5 923.5,123.0" fill="#FFFFFF" stroke="#2F6FD6" stroke-width="1.8"/>
+  <path d="M 588.0 252.6 L 610.7 239.4 L 633.3 231.9 L 656.0 201.1 L 678.7 205.0 L 701.3 189.9 L 724.0 174.5 L 746.7 142.1 L 769.3 159.4 L 792.0 130.6 L 814.7 128.9 L 837.3 138.4 L 860.0 117.4 L 882.7 130.6 L 905.3 128.9 L 928.0 106.0" fill="none" stroke="#1B9E77" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+  <circle cx="588.0" cy="252.6" r="3.3" fill="#FFFFFF" stroke="#1B9E77" stroke-width="1.8"/>
+  <circle cx="656.0" cy="201.1" r="3.3" fill="#FFFFFF" stroke="#1B9E77" stroke-width="1.8"/>
+  <circle cx="724.0" cy="174.5" r="3.3" fill="#FFFFFF" stroke="#1B9E77" stroke-width="1.8"/>
+  <circle cx="792.0" cy="130.6" r="3.3" fill="#FFFFFF" stroke="#1B9E77" stroke-width="1.8"/>
+  <circle cx="860.0" cy="117.4" r="3.3" fill="#FFFFFF" stroke="#1B9E77" stroke-width="1.8"/>
+  <circle cx="928.0" cy="106.0" r="3.3" fill="#FFFFFF" stroke="#1B9E77" stroke-width="1.8"/>
+  <path d="M 588.0 266.0 L 610.7 254.6 L 633.3 226.0 L 656.0 188.0 L 678.7 210.9 L 701.3 188.0 L 724.0 203.1 L 746.7 161.1 L 769.3 188.0 L 792.0 149.9 L 814.7 142.1 L 837.3 130.6 L 860.0 117.4 L 882.7 134.5 L 905.3 117.4 L 928.0 100.1" fill="none" stroke="#1B9E77" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="588.0" cy="266.0" r="3.6" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="656.0" cy="188.0" r="3.6" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="724.0" cy="203.1" r="3.6" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="792.0" cy="149.9" r="3.6" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="860.0" cy="117.4" r="3.6" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="928.0" cy="100.1" r="3.6" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <path d="M 588.0 266.0 L 610.7 237.5 L 633.3 218.5 L 656.0 191.6 L 678.7 186.0 L 701.3 186.0 L 724.0 184.0 L 746.7 146.0 L 769.3 155.5 L 792.0 136.5 L 814.7 157.5 L 837.3 142.1 L 860.0 132.6 L 882.7 125.0 L 905.3 119.4 L 928.0 90.6" fill="none" stroke="#2F6FD6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="588.0,261.6 592.5,266.0 588.0,270.5 583.5,266.0" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="656.0,187.2 660.5,191.6 656.0,196.1 651.5,191.6" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="724.0,179.6 728.5,184.0 724.0,188.5 719.5,184.0" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="792.0,132.0 796.5,136.5 792.0,140.9 787.5,136.5" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="860.0,128.1 864.5,132.6 860.0,137.0 855.5,132.6" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="928.0,86.1 932.5,90.6 928.0,95.1 923.5,90.6" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <text x="936" y="94.4" font-size="11.2" font-weight="800" fill="#2F6FD6">89.1%  DS-writer s43</text>
+  <line x1="930.0" y1="100.1" x2="934.0" y2="105.6" stroke="#1B9E77" stroke-width="0.9" opacity="0.65"/>
+  <text x="936" y="109.4" font-size="11.2" font-weight="800" fill="#1B9E77">85.2%  Self-w. s43</text>
+  <line x1="930.0" y1="106.0" x2="934.0" y2="120.6" stroke="#1B9E77" stroke-width="0.9" opacity="0.65"/>
+  <text x="936" y="124.4" font-size="11.2" font-weight="800" fill="#1B9E77">82.8%  Self-w. s44</text>
+  <line x1="930.0" y1="121.1" x2="934.0" y2="135.6" stroke="#D95F02" stroke-width="0.9" opacity="0.65"/>
+  <text x="936" y="139.4" font-size="11.2" font-weight="600" fill="#D95F02">76.6%  GRPO s43</text>
+  <line x1="930.0" y1="123.0" x2="934.0" y2="150.6" stroke="#2F6FD6" stroke-width="0.9" opacity="0.65"/>
+  <text x="936" y="154.4" font-size="11.2" font-weight="600" fill="#2F6FD6">75.8%  DS-writer s44</text>
+  <line x1="930.0" y1="138.4" x2="934.0" y2="165.6" stroke="#D95F02" stroke-width="0.9" opacity="0.65"/>
+  <text x="936" y="169.4" font-size="11.2" font-weight="600" fill="#D95F02">69.5%  GRPO s44</text>
+  
+  <g transform="translate(58, 366)" font-size="11.2" font-weight="600" fill="#1A1A1A">
+    <line x1="0" y1="0" x2="22" y2="0" stroke="#1B9E77" stroke-width="2.8"/><circle cx="11" cy="0" r="3.5" fill="#1B9E77" stroke="#FFF" stroke-width="1"/>
+    <text x="28" y="4">Skill-SD (self-writer)</text>
+    <line x1="170" y1="0" x2="192" y2="0" stroke="#2F6FD6" stroke-width="2.4"/><polygon points="181,-4 185,0 181,4 177,0" fill="#2F6FD6" stroke="#FFF" stroke-width="1"/>
+    <text x="198" y="4">Skill-SD (DeepSeek-V4-Flash writer)</text>
+    <line x1="422" y1="0" x2="444" y2="0" stroke="#D95F02" stroke-width="2.3"/><rect x="430" y="-3" width="6" height="6" fill="#D95F02" stroke="#FFF" stroke-width="1"/>
+    <text x="450" y="4">Vanilla GRPO</text>
+    <line x1="556" y1="0" x2="578" y2="0" stroke="#5D584E" stroke-width="2.2"/>
+    <text x="584" y="4" fill="#5D584E">Solid: Seed 43</text>
+    <line x1="686" y1="0" x2="708" y2="0" stroke="#5D584E" stroke-width="2.2" stroke-dasharray="5,3"/>
+    <text x="714" y="4" fill="#5D584E">Dashed: Seed 44</text>
+  </g>
+
+</svg>
+              <figcaption>
+                ALFWorld validation success rate across training steps (0&ndash;150) on 128 held-out episodes.
+                Self-written Skill-SD outperforms Vanilla GRPO across all four paired runs on both backbones.
+              </figcaption>
+            </figure>
+          </div>
+
+          <!-- Subsection 2: Skill placement & privileged context controls -->
+          <div class="sub-block">
+            <div class="sub-heading">
+              <h3>2. Skill Placement &amp; Alternative Privileged Contexts</h3>
+              <p>
+                On <code>Qwen3-4B-Instruct-2507</code> (seed 43), only teacher-side conditioning with compact, task-relevant skills
+                outperforms Vanilla GRPO. Explicit policy prompting, raw retrieved trajectories, and cross-family skills all fall short.
+              </p>
+            </div>
+
+            <div class="split-grid split-grid-controls">
+              <div class="table-wrap" style="margin-bottom:0;">
+                <table class="table-compact" aria-label="ALFWorld Qwen3-4B seed 43 controls comparing skill placement and privileged context">
+                  <thead>
+                    <tr>
+                      <th scope="col">Training Configuration</th>
+                      <th scope="col">Eval Skills</th>
+                      <th scope="col">Success</th>
+                      <th scope="col">vs. GRPO</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="highlight-row">
+                      <td><strong>Skill-SD (Ours)</strong></td>
+                      <td><strong>No</strong></td>
+                      <td class="num"><strong>75.8%</strong></td>
+                      <td class="num"><span class="gain-pos">+14.1</span></td>
+                    </tr>
+                    <tr>
+                      <td>Vanilla GRPO</td>
+                      <td>No</td>
+                      <td class="num">61.7%</td>
+                      <td class="num">&mdash;</td>
+                    </tr>
+                    <tr>
+                      <td>SDL + Retrieved Trajectory</td>
+                      <td>No</td>
+                      <td class="num">59.4%</td>
+                      <td class="num"><span class="gain-neg">&minus;2.3</span></td>
+                    </tr>
+                    <tr>
+                      <td>Skill-Augmented GRPO</td>
+                      <td>No</td>
+                      <td class="num">53.9%</td>
+                      <td class="num"><span class="gain-neg">&minus;7.8</span></td>
+                    </tr>
+                    <tr>
+                      <td>SDL + Cross-Family Skills Only</td>
+                      <td>No</td>
+                      <td class="num">44.5%</td>
+                      <td class="num"><span class="gain-neg">&minus;17.2</span></td>
+                    </tr>
+                    <tr>
+                      <td>Matched Skill Prompting</td>
+                      <td>Yes</td>
+                      <td class="num">14.8%</td>
+                      <td class="num"><span class="gain-neg">&minus;46.9</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <figure class="framed-figure" style="margin:0;">
+                <svg class="chart-svg" viewBox="0 0 618 378" width="618" height="378" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ALFWorld Qwen3-4B seed 43 validation curves comparing Skill-SD against prompting and context controls" style="font-family:'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;background:#FFFFFF;">
+  <text x="58" y="32" font-size="14.5" font-weight="800" fill="#1A1A1A">Skill Placement & Privileged Context Controls</text>
+  <text x="58" y="48" font-size="11.2" font-weight="500" fill="#5D584E">Qwen3-4B-Instruct-2507 · Seed 43 · 128 held-out ALFWorld games</text>
+  <rect x="58" y="56" width="378" height="274" fill="#FCFBF7" rx="4"/>
+  <line x1="58" y1="330.0" x2="436" y2="330.0" stroke="#1A1A1A" stroke-width="1.2"/>
+  <text x="50" y="334.0" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">0%</text>
+  <line x1="58" y1="265.5" x2="436" y2="265.5" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="50" y="269.5" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">20%</text>
+  <line x1="58" y1="201.1" x2="436" y2="201.1" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="50" y="205.1" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">40%</text>
+  <line x1="58" y1="136.6" x2="436" y2="136.6" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="50" y="140.6" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">60%</text>
+  <line x1="58" y1="72.1" x2="436" y2="72.1" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="50" y="76.1" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">80%</text>
+  <line x1="58" y1="56" x2="58" y2="330" stroke="#1A1A1A" stroke-width="1.2"/>
+  <text x="16" y="193.0" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1A1A1A" transform="rotate(-90 16 193.0)">Val. Success Rate (%)</text>
+  <line x1="58.0" y1="330" x2="58.0" y2="335" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="58.0" y="348" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">0</text>
+  <line x1="133.6" y1="330" x2="133.6" y2="335" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="133.6" y="348" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">30</text>
+  <line x1="209.2" y1="330" x2="209.2" y2="335" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="209.2" y="348" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">60</text>
+  <line x1="284.8" y1="330" x2="284.8" y2="335" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="284.8" y="348" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">90</text>
+  <line x1="360.4" y1="330" x2="360.4" y2="335" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="360.4" y="348" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">120</text>
+  <line x1="436.0" y1="330" x2="436.0" y2="335" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="436.0" y="348" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">150</text>
+  <text x="247.0" y="365" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1A1A1A">Training Step</text>
+  <path d="M 58.0 264.6 L 83.2 299.7 L 108.4 252.0 L 133.6 267.1 L 158.8 277.1 L 184.0 259.4 L 209.2 287.1 L 234.4 304.9 L 259.6 289.7 L 284.8 272.0 L 310.0 269.4 L 335.2 259.4 L 360.4 246.8 L 385.6 231.7 L 410.8 236.8 L 436.0 282.3" fill="none" stroke="#E8567A" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="58.0,260.1 62.5,268.3 53.5,268.3" fill="#FFFFFF" stroke="#E8567A" stroke-width="1.8"/>
+  <polygon points="133.6,262.7 138.1,270.9 129.1,270.9" fill="#FFFFFF" stroke="#E8567A" stroke-width="1.8"/>
+  <polygon points="209.2,282.7 213.7,290.9 204.7,290.9" fill="#FFFFFF" stroke="#E8567A" stroke-width="1.8"/>
+  <polygon points="284.8,267.5 289.3,275.8 280.3,275.8" fill="#FFFFFF" stroke="#E8567A" stroke-width="1.8"/>
+  <polygon points="360.4,242.4 364.9,250.6 355.9,250.6" fill="#FFFFFF" stroke="#E8567A" stroke-width="1.8"/>
+  <polygon points="436.0,277.8 440.5,286.1 431.5,286.1" fill="#FFFFFF" stroke="#E8567A" stroke-width="1.8"/>
+  <path d="M 58.0 264.6 L 83.2 242.0 L 108.4 252.0 L 133.6 249.4 L 158.8 262.0 L 184.0 264.6 L 209.2 264.6 L 234.4 262.0 L 259.6 256.8 L 284.8 231.7 L 310.0 242.0 L 335.2 209.1 L 360.4 216.5 L 385.6 229.4 L 410.8 214.3 L 436.0 186.6" fill="none" stroke="#7D7465" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+  <polygon points="58.0,260.1 62.5,264.6 58.0,269.0 53.5,264.6" fill="#FFFFFF" stroke="#7D7465" stroke-width="1.8"/>
+  <polygon points="133.6,245.0 138.1,249.4 133.6,253.9 129.1,249.4" fill="#FFFFFF" stroke="#7D7465" stroke-width="1.8"/>
+  <polygon points="209.2,260.1 213.7,264.6 209.2,269.0 204.7,264.6" fill="#FFFFFF" stroke="#7D7465" stroke-width="1.8"/>
+  <polygon points="284.8,227.2 289.3,231.7 284.8,236.1 280.3,231.7" fill="#FFFFFF" stroke="#7D7465" stroke-width="1.8"/>
+  <polygon points="360.4,212.1 364.9,216.5 360.4,221.0 355.9,216.5" fill="#FFFFFF" stroke="#7D7465" stroke-width="1.8"/>
+  <polygon points="436.0,182.1 440.5,186.6 436.0,191.0 431.5,186.6" fill="#FFFFFF" stroke="#7D7465" stroke-width="1.8"/>
+  <path d="M 58.0 264.6 L 83.2 234.3 L 108.4 216.5 L 133.6 231.7 L 158.8 216.5 L 184.0 221.7 L 209.2 226.8 L 234.4 204.0 L 259.6 194.0 L 284.8 201.7 L 310.0 184.0 L 335.2 158.8 L 360.4 188.8 L 385.6 178.8 L 410.8 166.2 L 436.0 156.3" fill="none" stroke="#7570B3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="58.0,260.1 62.5,268.3 53.5,268.3" fill="#7570B3" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="133.6,227.2 138.1,235.5 129.1,235.5" fill="#7570B3" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="209.2,222.4 213.7,230.6 204.7,230.6" fill="#7570B3" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="284.8,197.2 289.3,205.5 280.3,205.5" fill="#7570B3" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="360.4,184.4 364.9,192.6 355.9,192.6" fill="#7570B3" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="436.0,151.8 440.5,160.0 431.5,160.0" fill="#7570B3" stroke="#FFFFFF" stroke-width="1.2"/>
+  <path d="M 58.0 264.6 L 83.2 239.4 L 108.4 244.3 L 133.6 226.8 L 158.8 231.7 L 184.0 219.1 L 209.2 224.3 L 234.4 204.0 L 259.6 188.8 L 284.8 196.5 L 310.0 181.4 L 335.2 174.0 L 360.4 174.0 L 385.6 174.0 L 410.8 151.1 L 436.0 138.5" fill="none" stroke="#2F6FD6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="58.0,260.1 62.5,264.6 58.0,269.0 53.5,264.6" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="133.6,222.4 138.1,226.8 133.6,231.3 129.1,226.8" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="209.2,219.8 213.7,224.3 209.2,228.7 204.7,224.3" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="284.8,192.1 289.3,196.5 284.8,201.0 280.3,196.5" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="360.4,169.5 364.9,174.0 360.4,178.4 355.9,174.0" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="436.0,134.1 440.5,138.5 436.0,143.0 431.5,138.5" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <path d="M 58.0 264.6 L 83.2 206.5 L 108.4 224.3 L 133.6 224.3 L 158.8 229.4 L 184.0 236.8 L 209.2 249.4 L 234.4 236.8 L 259.6 224.3 L 284.8 216.5 L 310.0 229.4 L 335.2 201.7 L 360.4 194.0 L 385.6 199.1 L 410.8 184.0 L 436.0 131.1" fill="none" stroke="#D95F02" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="55.1" y="261.7" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="130.7" y="221.4" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="206.3" y="246.5" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="281.9" y="213.6" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="357.5" y="191.1" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="433.1" y="128.2" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <path d="M 58.0 264.6 L 83.2 226.8 L 108.4 221.7 L 133.6 234.3 L 158.8 249.4 L 184.0 242.0 L 209.2 231.7 L 234.4 231.7 L 259.6 204.0 L 284.8 199.1 L 310.0 174.0 L 335.2 148.8 L 360.4 158.8 L 385.6 151.1 L 410.8 108.2 L 436.0 85.7" fill="none" stroke="#1B9E77" stroke-width="3.1" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="58.0" cy="264.6" r="3.9" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="133.6" cy="234.3" r="3.9" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="209.2" cy="231.7" r="3.9" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="284.8" cy="199.1" r="3.9" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="360.4" cy="158.8" r="3.9" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="436.0" cy="85.7" r="3.9" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <text x="444" y="89.5" font-size="11.2" font-weight="800" fill="#1B9E77">75.8%  Skill-SD (Ours)</text>
+  <text x="444" y="134.9" font-size="11.2" font-weight="600" fill="#D95F02">61.7%  Vanilla GRPO</text>
+  <line x1="438.0" y1="138.5" x2="442.0" y2="146.1" stroke="#2F6FD6" stroke-width="0.9" opacity="0.65"/>
+  <text x="444" y="149.9" font-size="11.2" font-weight="600" fill="#2F6FD6">59.4%  SDL + Trajectory</text>
+  <line x1="438.0" y1="156.3" x2="442.0" y2="161.1" stroke="#7570B3" stroke-width="0.9" opacity="0.65"/>
+  <text x="444" y="164.9" font-size="11.2" font-weight="600" fill="#7570B3">53.9%  Skill-Aug. GRPO</text>
+  <text x="444" y="190.4" font-size="11.2" font-weight="600" fill="#7D7465">44.5%  Cross-Family Skills</text>
+  <text x="444" y="286.1" font-size="11.2" font-weight="600" fill="#E8567A">14.8%  Matched Prompting</text>
+</svg>
+                <figcaption>
+                  All six Qwen3-4B (seed 43) arms start from the identical policy (20.3%) and are evaluated on the same 128 held-out games.
+                </figcaption>
+              </figure>
+            </div>
+
+            <aside class="insight-callout">
+              <p class="insight-label">Diagnostics: Why do explicit skill prompting and alternative contexts trail Skill-SD?</p>
+              <ul class="insight-list">
+                <li>
+                  <strong>Matched skill prompting (14.8%):</strong> Keeping a frozen training-derived skill bank at evaluation
+                  (exact-family UCB1 top-1 retrieval) underperforms at all 15 checkpoints despite <strong>0.0%</strong> prompt and response clipping.
+                  Injected skills lengthen prompts from ~495 to ~825 tokens; at step 150 the 19,200-entry bank contains 81.6% summaries
+                  of failed episodes, and family-level retrieval retains instance-specific object names (e.g., <code>sidetable 1</code>,
+                  <code>desklamp 1</code>) that interfere with held-out layouts.
+                </li>
+                <li>
+                  <strong>Skill-Augmented GRPO (53.9%):</strong> Putting skills directly in the student&#39;s training prompt yields
+                  higher step-150 policy entropy (<strong>0.724</strong> vs. <strong>0.336</strong> for Skill-SD) and longer rollouts
+                  (~626k vs. ~441k tokens/batch), while inducing train&ndash;test prompt mismatch.
+                </li>
+                <li>
+                  <strong>Teacher context matters:</strong> Replacing compact skills with raw retrieved successful trajectories drops
+                  success to <strong>59.4%</strong>, and restricting retrieval to other task families (0.0% same-family retrieval)
+                  drops it to <strong>44.5%</strong> &mdash; both below Vanilla GRPO (61.7%).
+                </li>
+              </ul>
+            </aside>
+          </div>
+
+          <!-- Subsection 3: Sensitivity to lambda & Measured Training Cost -->
+          <div class="sub-block">
+            <div class="sub-heading">
+              <h3>3. Distillation Weight (&lambda;) Sensitivity &amp; Measured Compute Cost</h3>
+              <p>
+                We sweep the SDL coefficient &lambda; and benchmark wall-clock and GPU-hour overhead on the paired
+                <code>Qwen3-4B-Instruct-2507</code> (seed 43) run using 8&times; H200 GPUs.
+              </p>
+            </div>
+
+            <div class="split-grid split-grid-cost">
+              <div>
+                <figure class="framed-figure" style="margin:0;">
+                  <svg class="chart-svg" viewBox="0 0 618 326" width="618" height="326" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ALFWorld SDL weight lambda sensitivity curves showing lambda 1e-3 best and 1e-2 collapse" style="font-family:'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;background:#FFFFFF;">
+  <text x="58" y="32" font-size="14.5" font-weight="800" fill="#1A1A1A">SDL Weight (&#955;) Sensitivity on ALFWorld</text>
+  <text x="58" y="48" font-size="11.2" font-weight="500" fill="#5D584E">Qwen3-4B-Instruct-2507 · Seed 43 · Vanilla GRPO (&#955;=0) shown dashed</text>
+  <rect x="58" y="56" width="386" height="224" fill="#FCFBF7" rx="4"/>
+  <line x1="58" y1="280.0" x2="444" y2="280.0" stroke="#1A1A1A" stroke-width="1.2"/>
+  <text x="50" y="284.0" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">0%</text>
+  <line x1="58" y1="227.3" x2="444" y2="227.3" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="50" y="231.3" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">20%</text>
+  <line x1="58" y1="174.6" x2="444" y2="174.6" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="50" y="178.6" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">40%</text>
+  <line x1="58" y1="121.9" x2="444" y2="121.9" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="50" y="125.9" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">60%</text>
+  <line x1="58" y1="69.2" x2="444" y2="69.2" stroke="#E7E1D3" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="50" y="73.2" text-anchor="end" font-size="11" font-weight="500" fill="#5D584E">80%</text>
+  <line x1="58" y1="56" x2="58" y2="280" stroke="#1A1A1A" stroke-width="1.2"/>
+  <text x="16" y="168.0" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1A1A1A" transform="rotate(-90 16 168.0)">Val. Success Rate (%)</text>
+  <line x1="58.0" y1="280" x2="58.0" y2="285" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="58.0" y="298" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">0</text>
+  <line x1="135.2" y1="280" x2="135.2" y2="285" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="135.2" y="298" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">30</text>
+  <line x1="212.4" y1="280" x2="212.4" y2="285" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="212.4" y="298" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">60</text>
+  <line x1="289.6" y1="280" x2="289.6" y2="285" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="289.6" y="298" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">90</text>
+  <line x1="366.8" y1="280" x2="366.8" y2="285" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="366.8" y="298" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">120</text>
+  <line x1="444.0" y1="280" x2="444.0" y2="285" stroke="#1A1A1A" stroke-width="1.1"/>
+  <text x="444.0" y="298" text-anchor="middle" font-size="11" font-weight="500" fill="#5D584E">150</text>
+  <text x="251.0" y="315" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1A1A1A">Training Step</text>
+  <path d="M 58.0 226.5 L 83.7 201.7 L 109.5 195.7 L 135.2 209.9 L 160.9 216.2 L 186.7 236.8 L 212.4 234.7 L 238.1 275.8 L 263.9 280.0 L 289.6 280.0 L 315.3 280.0 L 341.1 280.0 L 366.8 280.0 L 392.5 280.0 L 418.3 280.0 L 444.0 280.0" fill="none" stroke="#E8567A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="58.0,222.0 62.5,230.3 53.5,230.3" fill="#FFFFFF" stroke="#E8567A" stroke-width="1.8"/>
+  <polygon points="135.2,205.4 139.7,213.7 130.7,213.7" fill="#FFFFFF" stroke="#E8567A" stroke-width="1.8"/>
+  <polygon points="212.4,230.2 216.9,238.5 207.9,238.5" fill="#FFFFFF" stroke="#E8567A" stroke-width="1.8"/>
+  <polygon points="289.6,275.5 294.1,283.8 285.1,283.8" fill="#FFFFFF" stroke="#E8567A" stroke-width="1.8"/>
+  <polygon points="366.8,275.5 371.3,283.8 362.3,283.8" fill="#FFFFFF" stroke="#E8567A" stroke-width="1.8"/>
+  <polygon points="444.0,275.5 448.5,283.8 439.5,283.8" fill="#FFFFFF" stroke="#E8567A" stroke-width="1.8"/>
+  <path d="M 58.0 226.5 L 83.7 197.8 L 109.5 214.1 L 135.2 209.9 L 160.9 209.9 L 186.7 197.8 L 212.4 212.0 L 238.1 197.8 L 263.9 179.1 L 289.6 189.3 L 315.3 183.3 L 341.1 181.2 L 366.8 164.6 L 392.5 177.0 L 418.3 158.5 L 444.0 146.1" fill="none" stroke="#7570B3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="58.0,222.0 62.5,226.5 58.0,231.0 53.5,226.5" fill="#7570B3" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="135.2,205.4 139.7,209.9 135.2,214.4 130.7,209.9" fill="#7570B3" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="212.4,207.6 216.9,212.0 212.4,216.5 207.9,212.0" fill="#7570B3" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="289.6,184.9 294.1,189.3 289.6,193.8 285.1,189.3" fill="#7570B3" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="366.8,160.1 371.3,164.6 366.8,169.0 362.3,164.6" fill="#7570B3" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="444.0,141.7 448.5,146.1 444.0,150.6 439.5,146.1" fill="#7570B3" stroke="#FFFFFF" stroke-width="1.2"/>
+  <path d="M 58.0 226.5 L 83.7 187.2 L 109.5 197.8 L 135.2 189.3 L 160.9 205.9 L 186.7 201.7 L 212.4 214.1 L 238.1 214.1 L 263.9 220.2 L 289.6 228.6 L 315.3 208.1 L 341.1 203.8 L 366.8 191.5 L 392.5 189.3 L 418.3 166.7 L 444.0 131.9" fill="none" stroke="#2F6FD6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="58.0,222.0 62.5,230.3 53.5,230.3" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="135.2,184.9 139.7,193.1 130.7,193.1" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="212.4,209.7 216.9,217.9 207.9,217.9" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="289.6,224.2 294.1,232.4 285.1,232.4" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="366.8,187.0 371.3,195.2 362.3,195.2" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <polygon points="444.0,127.4 448.5,135.7 439.5,135.7" fill="#2F6FD6" stroke="#FFFFFF" stroke-width="1.2"/>
+  <path d="M 58.0 226.5 L 83.7 179.1 L 109.5 193.6 L 135.2 193.6 L 160.9 197.8 L 186.7 203.8 L 212.4 214.1 L 238.1 203.8 L 263.9 193.6 L 289.6 187.2 L 315.3 197.8 L 341.1 175.1 L 366.8 168.8 L 392.5 173.0 L 418.3 160.6 L 444.0 117.4" fill="none" stroke="#D95F02" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+  <rect x="55.1" y="223.6" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="132.3" y="190.7" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="209.5" y="211.2" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="286.7" y="184.4" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="363.9" y="165.9" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <rect x="441.1" y="114.5" width="5.8" height="5.8" rx="0.8" fill="#D95F02" stroke="#FFFFFF" stroke-width="1.2"/>
+  <path d="M 58.0 226.5 L 83.7 195.7 L 109.5 191.5 L 135.2 201.7 L 160.9 214.1 L 186.7 208.1 L 212.4 199.6 L 238.1 199.6 L 263.9 177.0 L 289.6 173.0 L 315.3 152.5 L 341.1 131.9 L 366.8 140.1 L 392.5 133.7 L 418.3 98.7 L 444.0 80.2" fill="none" stroke="#1B9E77" stroke-width="3.1" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="58.0" cy="226.5" r="3.9" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="135.2" cy="201.7" r="3.9" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="212.4" cy="199.6" r="3.9" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="289.6" cy="173.0" r="3.9" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="366.8" cy="140.1" r="3.9" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <circle cx="444.0" cy="80.2" r="3.9" fill="#1B9E77" stroke="#FFFFFF" stroke-width="1.2"/>
+  <text x="452" y="84.0" font-size="11.2" font-weight="800" fill="#1B9E77">75.8%  &#955; = 10&#8315;&#179; (default)</text>
+  <text x="452" y="121.2" font-size="11.2" font-weight="600" fill="#D95F02">61.7%  GRPO (&#955; = 0)</text>
+  <text x="452" y="136.2" font-size="11.2" font-weight="600" fill="#2F6FD6">56.2%  &#955; = 3&#215;10&#8315;&#179;</text>
+  <text x="452" y="151.2" font-size="11.2" font-weight="600" fill="#7570B3">50.8%  &#955; = 3&#215;10&#8315;&#8308;</text>
+  <text x="452" y="281.8" font-size="11.2" font-weight="800" fill="#E8567A">0.0%   &#955; = 10&#8315;&#178; (collapse)</text>
+  
+  <line x1="279.3" y1="248.4" x2="258.7" y2="273.4" stroke="#E8567A" stroke-width="1.3" stroke-dasharray="2,2"/>
+  <rect x="269.0" y="223.3" width="118" height="20" rx="4" fill="#FFF0F4" stroke="#E8567A" stroke-width="1.1"/>
+  <text x="328.0" y="236.8" text-anchor="middle" font-size="10.5" font-weight="700" fill="#E8567A">&#955; = 10&#8315;&#178; collapse</text>
+
+</svg>
+                  <figcaption>
+                    &lambda; = 10<sup>&minus;3</sup> achieves 75.8% and transfers across both backbones without retuning;
+                    &lambda; = 10<sup>&minus;2</sup> collapses after step 60.
+                  </figcaption>
+                </figure>
+                <div class="table-wrap table-mini-row">
+                  <table class="table-compact" aria-label="ALFWorld SDL coefficient lambda sweep summary">
+                    <thead>
+                      <tr>
+                        <th scope="col">&lambda;</th>
+                        <th scope="col">3&times;10<sup>&minus;4</sup></th>
+                        <th scope="col">10<sup>&minus;3</sup> (default)</th>
+                        <th scope="col">3&times;10<sup>&minus;3</sup></th>
+                        <th scope="col">10<sup>&minus;2</sup></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="highlight-row">
+                        <td><strong>Success (Step 150)</strong></td>
+                        <td class="num">50.8%</td>
+                        <td class="num"><span class="gain-pos">75.8%</span></td>
+                        <td class="num">56.2%</td>
+                        <td class="num"><span class="gain-neg">0.0% (collapse)</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="cost-stack">
+                <div class="table-wrap" style="margin-bottom:0;">
+                  <table class="table-compact" aria-label="Measured training cost on ALFWorld with 8 H200 GPUs">
+                    <thead>
+                      <tr>
+                        <th scope="col">Quantity (8&times; H200, Seed 43)</th>
+                        <th scope="col">GRPO</th>
+                        <th scope="col">Skill-SD</th>
+                        <th scope="col">Overhead</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Pure training step (135-step avg.)</td>
+                        <td class="num">294.5 s</td>
+                        <td class="num">310.2 s</td>
+                        <td class="num">+5.3%</td>
+                      </tr>
+                      <tr class="highlight-row">
+                        <td><strong>Total wall-clock time</strong></td>
+                        <td class="num"><strong>13.22 h</strong></td>
+                        <td class="num"><strong>13.87 h</strong></td>
+                        <td class="num"><strong>+4.9%</strong></td>
+                      </tr>
+                      <tr>
+                        <td>Amortized end-to-end GPU-hours<sup>*</sup></td>
+                        <td class="num">105.76</td>
+                        <td class="num">120.21</td>
+                        <td class="num">+13.7%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="cost-breakdown">
+                  <h4>Where does the overhead go?</h4>
+                  <p>
+                    <strong>Teacher re-scoring (23.3 s, 7.5% of a step):</strong> A single forward pass over student-sampled
+                    tokens with no teacher rollout or environment interaction.
+                  </p>
+                  <p>
+                    <strong>Asynchronous shared writer<sup>*</sup>:</strong> A frozen 4-GPU vLLM writer serves 6 concurrent
+                    runs (amortized 4/6 GPU per run), overlapping summarization latency with rollout and gradient updates.
+                    A dedicated writer increases GPU-hours.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- COMPANION BENCHMARKS: AppWorld & Sokoban (Streamlined)             -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <section class="section section-white" id="benchmarks">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Additional Benchmarks</p>
+            <h2>AppWorld &amp; Sokoban</h2>
+          </div>
+
+          <p class="table-note">
+            Model: <code>Qwen3-4B-Instruct-2507</code> (Seed1.8 skill writer; single run per method; 57 AppWorld dev tasks &amp; 64 Sokoban test levels).
+            Subscripts denote absolute change from the base model.
+          </p>
+
+          <div class="table-wrap">
+            <table class="table-compact" aria-label="Main Skill-SD results on AppWorld and Sokoban">
+              <thead>
+                <tr>
+                  <th scope="col" rowspan="2">Method</th>
+                  <th scope="col" colspan="2" style="text-align:center;border-bottom:1px solid rgba(255,255,255,0.2)">AppWorld</th>
+                  <th scope="col" colspan="2" style="text-align:center;border-bottom:1px solid rgba(255,255,255,0.2)">Sokoban</th>
+                  <th scope="col" colspan="2" style="text-align:center;border-bottom:1px solid rgba(255,255,255,0.2)">Avg.</th>
+                </tr>
+                <tr>
+                  <th scope="col">Acc.</th>
+                  <th scope="col">Comp.</th>
+                  <th scope="col">Acc.</th>
+                  <th scope="col">Comp.</th>
+                  <th scope="col">Acc.</th>
+                  <th scope="col">Comp.</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Base Model</td>
+                  <td class="num">8.8%</td><td class="num">39.1%</td>
+                  <td class="num">12.5%</td><td class="num">32.0%</td>
+                  <td class="num">10.6%</td><td class="num">35.6%</td>
+                </tr>
+                <tr>
+                  <td>Vanilla OPD</td>
+                  <td class="num">22.8%<sub>+14.0</sub></td><td class="num">59.7%<sub>+20.6</sub></td>
+                  <td class="num">21.9%<sub>+9.4</sub></td><td class="num">37.5%<sub>+5.5</sub></td>
+                  <td class="num">22.4%<sub>+11.7</sub></td><td class="num">48.6%<sub>+13.0</sub></td>
+                </tr>
+                <tr>
+                  <td>Vanilla GRPO</td>
+                  <td class="num">50.9%<sub>+42.1</sub></td><td class="num">76.3%<sub>+37.2</sub></td>
+                  <td class="num">51.6%<sub>+39.1</sub></td><td class="num">68.8%<sub>+36.8</sub></td>
+                  <td class="num">51.2%<sub>+40.6</sub></td><td class="num">72.5%<sub>+36.9</sub></td>
+                </tr>
+                <tr>
+                  <td>Skill-Augmented GRPO</td>
+                  <td class="num">42.1%<sub>+33.3</sub></td><td class="num">76.1%<sub>+37.0</sub></td>
+                  <td class="num">20.3%<sub>+7.8</sub></td><td class="num">37.5%<sub>+5.5</sub></td>
+                  <td class="num">31.2%<sub>+20.6</sub></td><td class="num">56.8%<sub>+21.2</sub></td>
+                </tr>
+                <tr class="highlight-row">
+                  <td><strong>Skill-SD (Ours)</strong></td>
+                  <td class="num"><strong>64.9%</strong><sub>+56.1</sub></td><td class="num"><strong>84.9%</strong><sub>+45.8</sub></td>
+                  <td class="num"><strong>62.5%</strong><sub>+50.0</sub></td><td class="num"><strong>71.1%</strong><sub>+39.1</sub></td>
+                  <td class="num"><strong>63.7%</strong><sub>+53.1</sub></td><td class="num"><strong>78.0%</strong><sub>+42.4</sub></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="figure-grid figure-grid-2">
+            <figure class="framed-figure">
+              <img
+                src="assets/appworld-results.png"
+                alt="AppWorld training curves for Skill-SD and baselines"
+                width="901"
+                height="630"
+                loading="lazy"
+              >
+              <figcaption>AppWorld training curves (Skill-Augmented GRPO peaks in training but drops to 42.1% at test time)</figcaption>
+            </figure>
+            <figure class="framed-figure">
+              <img
+                src="assets/sokoban-results.png"
+                alt="Sokoban training curves for Skill-SD and baselines"
+                width="865"
+                height="595"
+                loading="lazy"
+              >
+              <figcaption>Sokoban training curves (Skill-SD reaches 62.5% vs. 51.6% for Vanilla GRPO)</figcaption>
+            </figure>
+          </div>
+
+          <!-- Compact Rollout / Sync Ablation & Optimization Dynamics -->
+          <div class="sub-block-compact">
+            <div class="sub-heading">
+              <h3>Rollout Ownership, Teacher Synchronization &amp; Token Alignment</h3>
+              <p>
+                Student-owned on-policy rollouts prevent mid-training collapse, and dynamic teacher synchronization adds
+                <strong>+15.8 pp</strong> on AppWorld and <strong>+12.5 pp</strong> on Sokoban over a frozen teacher.
+                Consistent with ALFWorld, <code>&lambda; = 10<sup>&minus;3</sup></code> achieves the best AppWorld validation completion (81.19%).
+              </p>
+            </div>
+
+            <p class="table-note">Subscripts denote absolute change from Skill-SD. <sup>*</sup>Training collapsed mid-run; values reflect the last pre-collapse checkpoint.</p>
+            <div class="table-wrap" style="margin-bottom:22px;">
+              <table class="table-compact" aria-label="Rollout ownership and teacher synchronization ablation on AppWorld and Sokoban">
+                <thead>
+                  <tr>
+                    <th scope="col">Rollout</th>
+                    <th scope="col">Teacher</th>
+                    <th scope="col">AppWorld Acc.</th>
+                    <th scope="col">AppWorld Comp.</th>
+                    <th scope="col">Sokoban Acc.</th>
+                    <th scope="col">Sokoban Comp.</th>
+                    <th scope="col">Avg. Acc.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="highlight-row">
+                    <td><strong>On-policy</strong></td>
+                    <td><strong>Dynamic (Skill-SD)</strong></td>
+                    <td class="num"><strong>64.9%</strong></td>
+                    <td class="num"><strong>84.9%</strong></td>
+                    <td class="num"><strong>62.5%</strong></td>
+                    <td class="num"><strong>71.1%</strong></td>
+                    <td class="num"><strong>63.7%</strong></td>
+                  </tr>
+                  <tr>
+                    <td>On-policy</td>
+                    <td>Frozen</td>
+                    <td class="num">49.1%<sub>&minus;15.8</sub></td>
+                    <td class="num">79.0%<sub>&minus;5.9</sub></td>
+                    <td class="num">50.0%<sub>&minus;12.5</sub></td>
+                    <td class="num">63.3%<sub>&minus;7.8</sub></td>
+                    <td class="num">49.6%<sub>&minus;14.1</sub></td>
+                  </tr>
+                  <tr style="color:#777">
+                    <td>Off-policy<sup>*</sup></td>
+                    <td>Frozen</td>
+                    <td class="num">45.6%<sub>&minus;19.3</sub></td>
+                    <td class="num">78.8%<sub>&minus;6.1</sub></td>
+                    <td class="num">12.5%<sub>&minus;50.0</sub></td>
+                    <td class="num">31.3%<sub>&minus;39.8</sub></td>
+                    <td class="num">29.1%<sub>&minus;34.6</sub></td>
+                  </tr>
+                  <tr style="color:#777">
+                    <td>Off-policy<sup>*</sup></td>
+                    <td>Dynamic</td>
+                    <td class="num">42.1%<sub>&minus;22.8</sub></td>
+                    <td class="num">76.5%<sub>&minus;8.4</sub></td>
+                    <td class="num">10.9%<sub>&minus;51.6</sub></td>
+                    <td class="num">32.0%<sub>&minus;39.1</sub></td>
+                    <td class="num">26.5%<sub>&minus;37.2</sub></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <figure class="framed-figure" style="margin:0;">
+              <img
+                src="assets/self-distillation.png"
+                alt="Token-level self-distillation dynamics showing teacher-student distribution alignment and declining SDL loss"
+                width="2000"
+                height="594"
+                loading="lazy"
+              >
+              <figcaption>
+                Token-level alignment on a representative AppWorld task: student and teacher distributions converge over training as SDL loss drops by 59.3%.
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-yellow cta-banner">
+        <div class="container cta-shell" style="flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px;">
+          <div style="max-width:52rem;">
+            <p class="eyebrow">Training Principle</p>
+            <h2 style="max-width:15ch;margin:0 auto;">Reward sets the&nbsp;course.<br>Skill refines each&nbsp;turn.</h2>
+            <p class="cta-subtext" style="max-width:46rem;margin:14px auto 0;">
+              GRPO provides global direction; the skill-conditioned teacher refines delicate token choices during training.
+              At inference, the student uses only the plain task prompt.
+            </p>
+          </div>
+          <a class="btn btn-primary" href="https://openreview.net/pdf?id=ZeThM3k7x0" target="_blank" rel="noopener noreferrer" style="width:auto;min-width:240px;padding-inline:30px;">
+            Read the Paper <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+      </section>
+
+      <section class="section section-dark" id="bibtex">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow eyebrow-light">Citation</p>
+            <h2 class="heading-light">Cite this work</h2>
+          </div>
+          <div class="bibtex-shell">
+            <button class="btn btn-copy" id="copy-bibtex" type="button">Copy BibTeX</button>
+            <pre><code id="bibtex-code">@inproceedings{wang2026skillsd,
+  title={Skill-{SD}: Skill-Conditioned Self-Distillation for Multi-turn {LLM} Agents},
+  author={Hao Wang and Guozhi Wang and Han Xiao and Yufeng Zhou and Yue Pan and Jichao Wang and Ke Xu and Yafei Wen and Xiaohu Ruan and Xiaoxin Chen and Honggang Qi},
+  booktitle={The Fortieth Annual Conference on Neural Information Processing Systems},
+  year={2026},
+  url={https://openreview.net/forum?id=ZeThM3k7x0}
+}</code></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-shell">
+        <p>&copy; 2026 Skill-SD Authors</p>
+        <p>UCAS &middot; CUHK &middot; USTC &middot; vivo AI Lab</p>
+      </div>
+    </footer>
+
+    <script>
+      // Scroll-triggered entrance animations
+      (function () {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.08 });
+
+        document.querySelectorAll(
+          ".section-heading, .abstract-card, .table-wrap, .quote-shell, .cta-shell, .sub-heading"
+        ).forEach(function (el) {
+          el.classList.add("anim");
+          observer.observe(el);
+        });
+
+        document.querySelectorAll(".cards-grid, .steps-grid, .figure-grid, .kpi-grid").forEach(function (grid) {
+          grid.querySelectorAll(".card, .step-card, .framed-figure, .kpi-card").forEach(function (child, i) {
+            child.classList.add("anim", "anim-d" + Math.min(i + 1, 4));
+            observer.observe(child);
+          });
+        });
+      })();
+
+      // 1. Scroll progress bar
+      (function () {
+        var header = document.querySelector(".site-header");
+        if (!header) return;
+        var ticking = false;
+        function updateProgress() {
+          var doc = document.documentElement;
+          var max = doc.scrollHeight - window.innerHeight;
+          header.style.setProperty("--scroll-progress", max > 0 ? (window.scrollY / max).toFixed(4) : 0);
+          ticking = false;
+        }
+        function req() { if (!ticking) { ticking = true; requestAnimationFrame(updateProgress); } }
+        window.addEventListener("scroll", req, { passive: true });
+        window.addEventListener("resize", req);
+        updateProgress();
+      })();
+
+      // 2. Card 3D tilt
+      (function () {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        if (!window.matchMedia("(pointer: fine)").matches) return;
+        document.querySelectorAll(".card, .step-card").forEach(function (card) {
+          var cx = 0, cy = 0, tx = 0, ty = 0, frame = null;
+          function render() {
+            cx += (tx - cx) * 0.14; cy += (ty - cy) * 0.14;
+            card.style.setProperty("--card-rotate-x", cx.toFixed(2) + "deg");
+            card.style.setProperty("--card-rotate-y", cy.toFixed(2) + "deg");
+            frame = (Math.abs(tx - cx) > 0.03 || Math.abs(ty - cy) > 0.03) ? requestAnimationFrame(render) : null;
+          }
+          card.addEventListener("pointermove", function (e) {
+            var r = card.getBoundingClientRect();
+            tx = (0.5 - (e.clientY - r.top) / r.height) * 12;
+            ty = ((e.clientX - r.left) / r.width - 0.5) * 12;
+            if (!frame) frame = requestAnimationFrame(render);
+          });
+          card.addEventListener("pointerleave", function () {
+            tx = 0; ty = 0;
+            if (!frame) frame = requestAnimationFrame(render);
+          });
+        });
+      })();
+
+      // 3. Scroll spy nav
+      (function () {
+        var links = Array.from(document.querySelectorAll('.site-nav a[href^="#"]'));
+        var header = document.querySelector(".site-header");
+        var sections = links.map(function (l) { return document.querySelector(l.getAttribute("href")); }).filter(Boolean);
+        var ticking = false;
+        function update() {
+          var offset = (header ? header.offsetHeight : 0) + 36;
+          var current = sections[0];
+          sections.forEach(function (s) { if (s.getBoundingClientRect().top - offset <= 0) current = s; });
+          if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 60) {
+            current = sections[sections.length - 1];
+          }
+          var active = "#" + current.id;
+          links.forEach(function (l) { l.classList.toggle("is-active", l.getAttribute("href") === active); });
+          ticking = false;
+        }
+        function req() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+        window.addEventListener("scroll", req, { passive: true });
+        window.addEventListener("resize", req);
+        update();
+      })();
+
+      // 3b. Heading word hover
+      (function () {
+        function wrapWords(el) {
+          var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+          var textNodes = [];
+          while (walker.nextNode()) {
+            var node = walker.currentNode;
+            var p = node.parentNode;
+            var skip = false;
+            while (p && p !== el) {
+              if (p.tagName === "CODE" || p.tagName === "SUP") { skip = true; break; }
+              p = p.parentNode;
+            }
+            if (!skip) { textNodes.push(node); }
+          }
+          textNodes.forEach(function (node) {
+            var frag = document.createDocumentFragment();
+            node.textContent.split(/([ ]+)/).forEach(function (part) {
+              if (!part.length) { return; }
+              if (/^[ ]+$/.test(part)) {
+                frag.appendChild(document.createTextNode(part));
+              } else {
+                var span = document.createElement("span");
+                span.className = "h-word";
+                span.textContent = part;
+                frag.appendChild(span);
+              }
+            });
+            node.parentNode.replaceChild(frag, node);
+          });
+        }
+        var targets = Array.from(document.querySelectorAll(
+          ".section-heading h2, .card h3, .step-card h3, .quote-text, .cta-banner h2"
+        ));
+        targets.forEach(wrapWords);
+      })();
+
+      // 4. Figure image reveal
+      (function () {
+        var rm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var figures = Array.from(document.querySelectorAll(".framed-figure"));
+        figures.forEach(function (f, i) { f.classList.add(i % 2 === 0 ? "figure-reveal-x" : "figure-reveal-y"); });
+        if (rm) { figures.forEach(function (f) { f.classList.add("is-revealed"); }); return; }
+        var obs = new IntersectionObserver(function (entries, o) {
+          entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("is-revealed"); o.unobserve(e.target); } });
+        }, { threshold: 0.16 });
+        figures.forEach(function (f) { obs.observe(f); });
+      })();
+
+      // 5. Table row stagger
+      (function () {
+        var rm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        document.querySelectorAll(".table-wrap").forEach(function (table) {
+          var rows = table.querySelectorAll("tbody tr");
+          rows.forEach(function (r, i) { r.style.setProperty("--row-stagger", i); });
+          if (rm) { rows.forEach(function (r) { r.classList.add("is-row-visible"); }); return; }
+          table.classList.add("rows-ready");
+          new IntersectionObserver(function (entries, o) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) {
+                e.target.querySelectorAll("tbody tr").forEach(function (r) { r.classList.add("is-row-visible"); });
+                o.unobserve(e.target);
+              }
+            });
+          }, { threshold: 0.2 }).observe(table);
+        });
+      })();
+
+      // 6. Hero word-by-word reveal
+      (function () {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        var title = document.querySelector(".hero-copy h1");
+        if (!title) return;
+        var parts = title.textContent.trim().split(/(\s+)/);
+        var frag = document.createDocumentFragment();
+        var wi = 0;
+        parts.forEach(function (part) {
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+          var span = document.createElement("span");
+          span.className = "hero-word";
+          span.style.setProperty("--word-index", wi++);
+          span.textContent = part;
+          frag.appendChild(span);
+        });
+        title.textContent = "";
+        title.appendChild(frag);
+      })();
+
+      // BibTeX copy button
+      (function () {
+        var copyButton = document.getElementById("copy-bibtex");
+        var bibtexCode = document.getElementById("bibtex-code");
+        if (!copyButton || !bibtexCode) { return; }
+
+        var defaultLabel = copyButton.textContent;
+        var resetTimer;
+
+        function setState(state, label) {
+          clearTimeout(resetTimer);
+          copyButton.dataset.copyState = state;
+          copyButton.textContent = label;
+          resetTimer = window.setTimeout(function () {
+            delete copyButton.dataset.copyState;
+            copyButton.textContent = defaultLabel;
+          }, 1800);
+        }
+
+        copyButton.addEventListener("click", function () {
+          var text = bibtexCode.textContent;
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(
+              function () { setState("success", "Copied \u2713"); },
+              function () { setState("error", "Copy failed"); }
+            );
+            return;
+          }
+
+          var fallback = document.createElement("textarea");
+          fallback.value = text;
+          fallback.setAttribute("readonly", "");
+          fallback.style.position = "absolute";
+          fallback.style.left = "-9999px";
+          document.body.appendChild(fallback);
+          fallback.select();
+
+          try {
+            document.execCommand("copy");
+            setState("success", "Copied \u2713");
+          } catch (error) {
+            setState("error", "Copy failed");
+          }
+
+          document.body.removeChild(fallback);
+        });
+      })();
+    </script>
+    <script>
+      // Skills section — card ↔ JSON field interaction
+      (function () {
+        var showcase = document.querySelector("#skills .skill-showcase");
+        if (!showcase) { return; }
+        var cards   = showcase.querySelectorAll(".skill-field-card");
+        var fields  = showcase.querySelectorAll(".skill-json-field");
+        var badges  = showcase.querySelectorAll(".skill-json-badge");
+        var current = showcase.querySelector("[data-skill-current]");
+
+        function setActive(card) {
+          var field = card.dataset.skillField;
+          var title = card.dataset.skillTitle;
+          showcase.dataset.activeField = field;
+          cards.forEach(function (item) {
+            var active = item === card;
+            item.classList.toggle("is-active", active);
+            item.setAttribute("aria-pressed", active ? "true" : "false");
+          });
+          fields.forEach(function (item) { item.classList.toggle("is-active", item.dataset.skillPanel === field); });
+          badges.forEach(function (item) { item.classList.toggle("is-active", item.dataset.skillBadge === field); });
+          if (current) { current.textContent = title; }
+        }
+
+        cards.forEach(function (card) {
+          card.addEventListener("click", function () { setActive(card); });
+          card.addEventListener("focus", function () { setActive(card); });
+        });
+      })();
+    </script>
+  </body>
+</html>
