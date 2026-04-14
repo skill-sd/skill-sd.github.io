@@ -151,40 +151,44 @@
       <section class="section section-white" id="method">
         <div class="container">
           <div class="section-heading">
-            <p class="eyebrow">Process</p>
+            <p class="eyebrow">Method</p>
             <h2>How it works</h2>
           </div>
           <div class="steps-grid">
             <article class="step-card">
               <div class="step-chip">01</div>
-              <h3>Student Rollouts</h3>
+              <h3>Plain-Prompt On-Policy Rollouts</h3>
               <p>
-                Student acts under the plain task prompt with no skill context, generating on-policy
-                trajectories. Task completion rewards are assigned at the end of each episode.
+                The student interacts with the environment using only the original task prompt, never the
+                distilled skills. This keeps the student's conditioning identical at train and test time
+                while producing on-policy trajectories and task-level RL reward.
               </p>
             </article>
             <article class="step-card">
               <div class="step-chip">02</div>
-              <h3>Skill Summarization</h3>
+              <h3>Trajectory-to-Skill Distillation</h3>
               <p>
-                Completed trajectories are distilled into compact skill summaries — successes, mistakes,
-                and key workflows — by an auxiliary LLM and stored in a UCB-indexed buffer for efficient reuse.
+                After each episode, an auxiliary LLM compresses the trajectory into a compact skill summary
+                capturing reusable successes, failure modes, and a high-level workflow. These summaries
+                serve as dynamic privileged information stored in a skill buffer.
               </p>
             </article>
             <article class="step-card">
               <div class="step-chip">03</div>
-              <h3>Skill-Conditioned Rescoring</h3>
+              <h3>Teacher-Only Skill Replay</h3>
               <p>
-                The teacher receives the skill context and re-scores each token of the student's trajectory.
-                Token-level importance weights correct for distribution shift between teacher and student.
+                Retrieved skills are injected only into the teacher, which re-evaluates the student's
+                sampled trajectory token by token under the enriched context. This yields dense token-level
+                guidance without ever changing the student's input distribution.
               </p>
             </article>
             <article class="step-card">
               <div class="step-chip">04</div>
-              <h3>Joint RL + Distillation Update</h3>
+              <h3>GRPO + Importance-Weighted SDL</h3>
               <p>
-                GRPO provides task-level reward. SDL applies importance-weighted reverse-KL distillation
-                at the token level. The teacher is periodically synced with the improving student.
+                The student is updated with GRPO at the trajectory level and importance-weighted
+                reverse-KL distillation at the token level. The importance weights correct
+                teacher-student distribution mismatch; the teacher is periodically refreshed from the improving student.
               </p>
             </article>
           </div>
@@ -598,11 +602,14 @@
           </div>
           <div class="bibtex-shell">
             <button class="btn btn-copy" id="copy-bibtex" type="button">Copy BibTeX</button>
-            <pre><code id="bibtex-code">@article{wang2026skillsd,
+            <pre><code id="bibtex-code">@misc{wang2026skillsdskillconditionedselfdistillationmultiturn,
   title={Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents},
-  author={Wang, Hao and Wang, Guozhi and Xiao, Han and Zhou, Yufeng and Pan, Yue and Wang, Jichao and Xu, Ke and Wen, Yafei and Ruan, Xiaohu and Chen, Xiaoxin and Qi, Honggang},
-  journal={arXiv preprint},
-  year={2026}
+  author={Hao Wang and Guozhi Wang and Han Xiao and Yufeng Zhou and Yue Pan and Jichao Wang and Ke Xu and Yafei Wen and Xiaohu Ruan and Xiaoxin Chen and Honggang Qi},
+  year={2026},
+  eprint={2604.10674},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2604.10674},
 }</code></pre>
           </div>
         </div>
