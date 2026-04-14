@@ -158,38 +158,22 @@
             <article class="step-card">
               <div class="step-chip">01</div>
               <h3>Plain-Prompt On-Policy Rollouts</h3>
-              <p>
-                The student interacts with the environment using only the original task prompt, never the
-                distilled skills. This keeps the student's conditioning identical at train and test time
-                while producing on-policy trajectories and task-level RL reward.
-              </p>
+              <p>The student rolls out using only the task prompt — no distilled skills — preserving identical train/test conditioning.</p>
             </article>
             <article class="step-card">
               <div class="step-chip">02</div>
               <h3>Trajectory-to-Skill Distillation</h3>
-              <p>
-                After each episode, an auxiliary LLM compresses the trajectory into a compact skill summary
-                capturing reusable successes, failure modes, and a high-level workflow. These summaries
-                serve as dynamic privileged information stored in a skill buffer.
-              </p>
+              <p>An auxiliary LLM compresses each episode into a reusable skill summary of successes, failures, and workflow.</p>
             </article>
             <article class="step-card">
               <div class="step-chip">03</div>
               <h3>Teacher-Only Skill Replay</h3>
-              <p>
-                Retrieved skills are injected only into the teacher, which re-evaluates the student's
-                sampled trajectory token by token under the enriched context. This yields dense token-level
-                guidance without ever changing the student's input distribution.
-              </p>
+              <p>Retrieved skills go only to the teacher, which re-scores the trajectory token by token — student inputs stay unchanged.</p>
             </article>
             <article class="step-card">
               <div class="step-chip">04</div>
               <h3>GRPO + Importance-Weighted SDL</h3>
-              <p>
-                The student is updated with GRPO at the trajectory level and importance-weighted
-                reverse-KL distillation at the token level. The importance weights correct
-                teacher-student distribution mismatch; the teacher is periodically refreshed from the improving student.
-              </p>
+              <p>GRPO handles trajectory-level reward; importance-weighted reverse-KL distills token-level guidance and corrects teacher-student mismatch.</p>
             </article>
           </div>
         </div>
