@@ -33,7 +33,7 @@
           <span class="nav-sep" aria-hidden="true">·</span>
           <a href="#bibtex">BibTeX</a>
         </nav>
-        <a class="btn btn-primary btn-nav" href="#">Read Paper <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn-primary btn-nav" href="https://arxiv.org/pdf/2604.10674" target="_blank" rel="noopener noreferrer">Read Paper <span aria-hidden="true">&rarr;</span></a>
       </div>
     </header>
 
@@ -76,7 +76,7 @@
             </a>
           </div>
           <div class="button-row">
-            <a class="btn btn-outline" href="#">&#128196; Paper</a>
+            <a class="btn btn-outline" href="https://arxiv.org/pdf/2604.10674" target="_blank" rel="noopener noreferrer">&#128196; Paper</a>
             <a class="btn btn-primary btn-coming-soon" href="#" aria-disabled="true" tabindex="-1">&#128187; Code <span class="coming-soon-badge">Coming Soon</span></a>
           </div>
         </div>
@@ -157,34 +157,34 @@
           <div class="steps-grid">
             <article class="step-card">
               <div class="step-chip">01</div>
-              <h3>On-policy Rollouts</h3>
+              <h3>Student Rollouts</h3>
               <p>
-                Student generates trajectories under the plain task prompt. Rewards are assigned from task
-                completion.
+                Student acts under the plain task prompt with no skill context, generating on-policy
+                trajectories. Task completion rewards are assigned at the end of each episode.
               </p>
             </article>
             <article class="step-card">
               <div class="step-chip">02</div>
-              <h3>Skill Extraction</h3>
+              <h3>Skill Summarization</h3>
               <p>
-                Completed trajectories are summarized into success, mistake, and workflow skills by an
-                auxiliary LLM and stored in a UCB-indexed buffer.
+                Completed trajectories are distilled into compact skill summaries — successes, mistakes,
+                and key workflows — by an auxiliary LLM and stored in a UCB-indexed buffer for efficient reuse.
               </p>
             </article>
             <article class="step-card">
               <div class="step-chip">03</div>
-              <h3>Token Re-scoring</h3>
+              <h3>Skill-Conditioned Rescoring</h3>
               <p>
-                Teacher and student score the same student trajectory, and importance weights are computed
-                from the log-ratio between the two distributions.
+                The teacher receives the skill context and re-scores each token of the student's trajectory.
+                Token-level importance weights correct for distribution shift between teacher and student.
               </p>
             </article>
             <article class="step-card">
               <div class="step-chip">04</div>
-              <h3>Joint Update</h3>
+              <h3>Joint RL + Distillation Update</h3>
               <p>
-                GRPO provides task-level credit while SDL supplies token-level guidance, with dynamic teacher
-                sync to keep the signal calibrated.
+                GRPO provides task-level reward. SDL applies importance-weighted reverse-KL distillation
+                at the token level. The teacher is periodically synced with the improving student.
               </p>
             </article>
           </div>
@@ -529,8 +529,8 @@
             <h2>SDL Coefficient &lambda; on AppWorld</h2>
           </div>
           <p style="max-width:56rem;color:var(--muted);margin-bottom:20px;">
-            The SDL coefficient mediates the RL–distillation trade-off. &lambda; = 0.001 acts as a mild shaping
-            term that guides the student without dominating the RL signal.
+            The SDL coefficient mediates the RL–distillation trade-off. &lambda; = 0.001 achieves 81.19% validation completion,
+            acting as a mild shaping term that guides the student without dominating the RL signal.
           </p>
           <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:28px;align-items:center;">
             <div class="table-wrap" style="margin-bottom:0;">
@@ -548,15 +548,15 @@
                   </tr>
                   <tr>
                     <td>0.005</td>
-                    <td>~70–75%</td>
+                    <td>74.66%</td>
                   </tr>
                   <tr class="highlight-row">
                     <td><strong>0.001</strong></td>
-                    <td><strong>~80% (best)</strong></td>
+                    <td><strong>81.19% (best)</strong></td>
                   </tr>
                   <tr>
                     <td>0.0005</td>
-                    <td>~70–75%</td>
+                    <td>75.98%</td>
                   </tr>
                 </tbody>
               </table>
@@ -584,7 +584,7 @@
               At inference, the student uses only the plain task prompt.
             </p>
           </div>
-          <a class="btn btn-primary" href="#" style="width:auto;min-width:260px;padding-inline:30px;">
+          <a class="btn btn-primary" href="https://arxiv.org/abs/2604.10674" target="_blank" rel="noopener noreferrer" style="width:auto;min-width:260px;padding-inline:30px;">
             Read the arXiv preprint <span aria-hidden="true">&rarr;</span>
           </a>
         </div>
